@@ -10,27 +10,61 @@ import { handleError } from "../utils";
 export async function createUser(user: CreateUserParams) {
   try {
     await connectToDatabase();
+    
+    // Check if user already exists
+    const existingUser = await User.findOne({ 
+      $or: [
+        { clerkId: user.clerkId },
+        { email: user.email }
+      ]
+    });
 
+    if (existingUser) {
+      console.log('User already exists:', existingUser);
+      return JSON.parse(JSON.stringify(existingUser));
+    }
+
+    console.log('Creating new user with data:', user);
     const newUser = await User.create(user);
+    
+    if (!newUser) {
+      throw new Error('Failed to create user');
+    }
 
+    console.log('Successfully created user:', newUser);
     return JSON.parse(JSON.stringify(newUser));
   } catch (error) {
-    handleError(error);
+    console.error('Error in createUser:', error);
+    throw error; // Let the webhook handler catch and process the error
   }
 }
 
 // READ
 export async function getUserById(userId: string) {
   try {
+    console.log('Getting user by ID:', userId);
     await connectToDatabase();
+    
+    if (!userId) {
+      console.error('getUserById called with no userId');
+      throw new Error('UserId is required');
+    }
 
+    console.log('Searching for user with clerkId:', userId);
     const user = await User.findOne({ clerkId: userId });
+    
+    if (!user) {
+      console.error('User not found for ID:', userId);
+      // 临时改为返回 null 而不是抛出错误，方便调试
+      return null;
+      // throw new Error("User not found");
+    }
 
-    if (!user) throw new Error("User not found");
-
+    console.log('Found user:', user);
     return JSON.parse(JSON.stringify(user));
   } catch (error) {
-    handleError(error);
+    console.error('Error in getUserById:', error);
+    throw error;
   }
 }
 

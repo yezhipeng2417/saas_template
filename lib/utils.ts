@@ -13,17 +13,39 @@ export function cn(...inputs: ClassValue[]) {
 // ERROR HANDLER
 export const handleError = (error: unknown) => {
   if (error instanceof Error) {
+    // Check if it's an SSL/TLS error
+    if (error.message.includes('SSL') || error.message.includes('tlsv1')) {
+      console.error('SSL/TLS Connection Error:', error.message);
+      // Instead of throwing, return a more user-friendly error
+      return {
+        error: 'Connection Error',
+        message: 'Unable to connect to the server. Please try again later.',
+        details: error.message
+      };
+    }
+    
     // This is a native JavaScript error (e.g., TypeError, RangeError)
     console.error(error.message);
-    throw new Error(`Error: ${error.message}`);
+    return {
+      error: 'Error',
+      message: error.message,
+      details: error.stack
+    };
   } else if (typeof error === "string") {
     // This is a string error message
     console.error(error);
-    throw new Error(`Error: ${error}`);
+    return {
+      error: 'Error',
+      message: error
+    };
   } else {
     // This is an unknown type of error
-    console.error(error);
-    throw new Error(`Unknown error: ${JSON.stringify(error)}`);
+    console.error('Unknown error:', error);
+    return {
+      error: 'Unknown Error',
+      message: 'An unexpected error occurred',
+      details: JSON.stringify(error)
+    };
   }
 };
 

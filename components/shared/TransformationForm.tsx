@@ -183,6 +183,42 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
     }
   }, [image, transformationType.config, type])
 
+  const uploadImage = async (imagePath: string) => {
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ path: imagePath }),
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Failed to upload: ${error}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw error;
+    }
+  };
+
+  // Cloudinary Upload Widget 配置
+  const widgetOptions = {
+    cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+    uploadPreset: 'imaginify_uploads',
+    sources: ['local', 'url', 'camera'],
+    multiple: false,
+    folder: 'imaginify',
+    clientAllowedFormats: ['image/*'],
+    maxFileSize: 5000000, // 5MB
+    secure: true,
+    ssl: true,
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">

@@ -42,10 +42,11 @@ const MediaUploader = ({
     })
   }
 
-  const onUploadErrorHandler = () => {
+  const onUploadErrorHandler = (error: any) => {
+    console.error('Upload error:', error);
     toast({
       title: 'Something went wrong while uploading',
-      description: 'Please try again',
+      description: error.message || 'Please try again',
       duration: 5000,
       className: 'error-toast' 
     })
@@ -53,10 +54,16 @@ const MediaUploader = ({
 
   return (
     <CldUploadWidget
-      uploadPreset="jsm_imaginify"
+      uploadPreset="saas-test"
       options={{
         multiple: false,
         resourceType: "image",
+        folder: "saas/test",
+        clientAllowedFormats: ["png", "jpg", "jpeg", "gif", "webp"],
+        maxFileSize: 5000000,
+        sources: ["local", "url", "camera"],
+        secure: true,
+        ssl: true,
       }}
       onSuccess={onUploadSuccessHandler}
       onError={onUploadErrorHandler}
@@ -74,7 +81,7 @@ const MediaUploader = ({
                   width={getImageSize(type, image, "width")}
                   height={getImageSize(type, image, "height")}
                   src={publicId}
-                  alt="image"
+                  alt={image?.title || "Uploaded image"}
                   sizes={"(max-width: 767px) 100vw, 50vw"}
                   placeholder={dataUrl as PlaceholderValue}
                   className="media-uploader_cldImage"
@@ -86,12 +93,12 @@ const MediaUploader = ({
               <div className="media-uploader_cta-image">
                 <Image 
                   src="/assets/icons/add.svg"
-                  alt="Add Image"
+                  alt="Upload image icon"
                   width={24}
                   height={24}
                 />
               </div>
-                <p className="p-14-medium">Click here to upload image</p>
+              <p className="p-14-medium">Click here to upload image</p>
             </div>
           )}
         </div>
